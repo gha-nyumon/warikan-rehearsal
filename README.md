@@ -17,7 +17,7 @@
 | `pyproject.toml` | pytest・ruff の設定 |
 | `requirements-dev.txt` | テストとチェックに使う道具（バージョンは固定） |
 
-`.github/workflows/` はまだありません。ハンズオンで1つずつ作ります。
+`.github/` の中身は、ハンズオンで1つずつ育てます。
 
 ## 使い方
 
