@@ -3,9 +3,9 @@
 「GitHub Actions 入門」のハンズオンで育てるリポジトリです。
 合計の金額と人数から、1人あたりの金額を計算します。割り切れない端数は幹事が払い、幹事が多めに払うこともできます。
 
-<!-- ▼ ハンズオン H2 で、ここにワークフローの状態バッジを貼ります
-[![CI](https://github.com/<あなたのユーザー名>/warikan/actions/workflows/ci.yml/badge.svg)](https://github.com/<あなたのユーザー名>/warikan/actions/workflows/ci.yml)
--->
+[![CI](https://github.com/gha-nyumon/warikan-rehearsal/actions/workflows/ci.yml/badge.svg)](https://github.com/gha-nyumon/warikan-rehearsal/actions/workflows/ci.yml)
+
+<!-- ↑ <あなたのユーザー名> を自分の GitHub のユーザー名（または Organization 名）に置き換えてください -->
 
 ## 中身
 
