@@ -1,0 +1,12 @@
+# 使っているアクションと Python の道具に新しい版が出たら、更新のプルリクエストを自動で作る
+version: 2
+updates:
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+
+  - package-ecosystem: "pip"
+    directory: "/"
+    schedule:
+      interval: "weekly"
