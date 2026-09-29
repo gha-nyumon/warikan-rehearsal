@@ -13,6 +13,7 @@
 |---|---|
 | `warikan/calc.py` | 割り勘の計算（関数だけの小さなコード） |
 | `tests/test_calc.py` | pytest のテスト |
+| `scripts/summary.py` | テストの結果から実行のまとめ（Markdown）を作る（H4 で追加） |
 | `scripts/build_site.py` | 早見表（金額 × 人数）の HTML を `site/` に書き出す |
 | `pyproject.toml` | pytest・ruff の設定 |
 | `requirements-dev.txt` | テストとチェックに使う道具（バージョンは固定） |

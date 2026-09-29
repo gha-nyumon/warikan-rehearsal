@@ -53,4 +53,8 @@ jobs:
         run: pip install -r requirements-dev.txt
 
       - name: テストを実行する（pytest）
-        run: pytest
+        run: pytest --junitxml=report/junit.xml
+
+      - name: 実行のまとめを書く
+        if: always()
+        run: python scripts/summary.py report/junit.xml "テストの結果（Python ${{ matrix.python }}）" >> "$GITHUB_STEP_SUMMARY"
