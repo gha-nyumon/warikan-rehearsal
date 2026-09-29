@@ -1,0 +1,60 @@
+name: テスト（再利用ワークフロー）
+
+# ほかのワークフローから呼び出して使う
+on:
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: リポジトリを取り出す
+        uses: actions/checkout@v7
+
+      # 公式以外のアクションは、コミットの SHA で固定する（右のコメントは版の目印）
+      - name: 書き方をチェックする（ruff）
+        uses: astral-sh/ruff-action@278981a28ce3188b1e39527901f38254bf3aac89 # v4.1.0
+        with:
+          version-file: requirements-dev.txt
+
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        python: ["3.12", "3.13", "3.14"]
+    steps:
+      - name: リポジトリを取り出す
+        uses: actions/checkout@v7
+
+      # 同じリポジトリの複合アクションを呼ぶ（$/ は、実行中のコミットのこのリポジトリ）
+      - name: Python と道具を用意する
+        uses: $/.github/actions/setup
+        with:
+          python-version: ${{ matrix.python }}
+
+      - name: テストを実行する（pytest）
+        run: >-
+          pytest
+          --junitxml=report/junit.xml
+          --cov=warikan
+          --cov-report=term
+          --cov-report=html:report/htmlcov
+
+      - name: 実行のまとめを書く
+        if: always()
+        run: python scripts/summary.py report/junit.xml "テストの結果（Python ${{ matrix.python }}）" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: テストのレポートを残す
+        if: always() && matrix.python == '3.13'
+        uses: actions/upload-artifact@v7
+        with:
+          name: test-report
+          path: report/
+          retention-days: 7
+          if-no-files-found: error
