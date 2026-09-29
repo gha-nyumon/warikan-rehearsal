@@ -4,7 +4,7 @@
 割り切れない端数は幹事が払う。幹事が多めに払うこともできる。
 """
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 
 @dataclass(frozen=True)
