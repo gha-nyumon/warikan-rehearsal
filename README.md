@@ -3,11 +3,9 @@
 「GitHub Actions 入門」のハンズオンで育てるリポジトリです。
 合計の金額と人数から、1人あたりの金額を計算します。割り切れない端数は幹事が払い、幹事が多めに払うこともできます。
 
+<!-- ▼ ハンズオン H2 で、ここにワークフローの状態バッジを貼ります
 [![CI](https://github.com/<あなたのユーザー名>/warikan/actions/workflows/ci.yml/badge.svg)](https://github.com/<あなたのユーザー名>/warikan/actions/workflows/ci.yml)
-
-<!-- ↑ <あなたのユーザー名> を自分の GitHub のユーザー名（または Organization 名）に置き換えてください -->
-
-早見表のページ: https://<あなたのユーザー名>.github.io/warikan/
+-->
 
 ## 中身
 
@@ -15,12 +13,11 @@
 |---|---|
 | `warikan/calc.py` | 割り勘の計算（関数だけの小さなコード） |
 | `tests/test_calc.py` | pytest のテスト |
-| `scripts/summary.py` | テストの結果から実行のまとめ（Markdown）を作る（H4 で追加） |
 | `scripts/build_site.py` | 早見表（金額 × 人数）の HTML を `site/` に書き出す |
 | `pyproject.toml` | pytest・ruff の設定 |
 | `requirements-dev.txt` | テストとチェックに使う道具（バージョンは固定） |
 
-`.github/` の中身は、ハンズオンで1つずつ育てます。
+`.github/workflows/` はまだありません。ハンズオンで1つずつ作ります。
 
 ## 使い方
 
