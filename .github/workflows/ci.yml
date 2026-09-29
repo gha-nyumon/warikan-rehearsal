@@ -1,11 +1,23 @@
 name: CI
 
 on:
+  pull_request:
   push:
+    branches: [main]
+    paths-ignore:
+      - "docs/**"
+      - "**.md"
+  workflow_dispatch:
+
+# 同じブランチの古い実行は取り消す
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
-  test:
+  lint:
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     steps:
       - name: リポジトリを取り出す
         uses: actions/checkout@v7
@@ -20,6 +32,25 @@ jobs:
 
       - name: 書き方をチェックする（ruff）
         run: ruff check .
+
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        python: ["3.12", "3.13", "3.14"]
+    steps:
+      - name: リポジトリを取り出す
+        uses: actions/checkout@v7
+
+      - name: Python を用意する
+        uses: actions/setup-python@v7
+        with:
+          python-version: ${{ matrix.python }}
+
+      - name: 道具をインストールする
+        run: pip install -r requirements-dev.txt
 
       - name: テストを実行する（pytest）
         run: pytest
