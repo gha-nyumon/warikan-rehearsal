@@ -19,116 +19,16 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  lint:
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
-    steps:
-      - name: リポジトリを取り出す
-        uses: actions/checkout@v7
-
-      # 公式以外のアクションは、コミットの SHA で固定する（右のコメントは版の目印）
-      - name: 書き方をチェックする（ruff）
-        uses: astral-sh/ruff-action@278981a28ce3188b1e39527901f38254bf3aac89 # v4.1.0
-        with:
-          version-file: requirements-dev.txt
-
+  # テストは再利用ワークフローを呼ぶ（公開のワークフローと同じものを使う）
   test:
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    strategy:
-      fail-fast: false
-      matrix:
-        python: ["3.12", "3.13", "3.14"]
-    steps:
-      - name: リポジトリを取り出す
-        uses: actions/checkout@v7
-
-      - name: Python を用意する（pip のキャッシュつき）
-        uses: actions/setup-python@v7
-        with:
-          python-version: ${{ matrix.python }}
-          cache: pip
-          cache-dependency-path: requirements-dev.txt
-
-      - name: 道具をインストールする
-        run: pip install -r requirements-dev.txt
-
-      - name: テストを実行する（pytest）
-        run: >-
-          pytest
-          --junitxml=report/junit.xml
-          --cov=warikan
-          --cov-report=term
-          --cov-report=html:report/htmlcov
-
-      - name: 実行のまとめを書く
-        if: always()
-        run: python scripts/summary.py report/junit.xml "テストの結果（Python ${{ matrix.python }}）" >> "$GITHUB_STEP_SUMMARY"
-
-      - name: テストのレポートを残す
-        if: always() && matrix.python == '3.13'
-        uses: actions/upload-artifact@v7
-        with:
-          name: test-report
-          path: report/
-          retention-days: 7
-          if-no-files-found: error
-
-  build:
-    needs: [lint, test]
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
-    outputs:
-      size: ${{ steps.site.outputs.size }}
-    steps:
-      - name: リポジトリを取り出す
-        uses: actions/checkout@v7
-
-      - name: Python を用意する
-        uses: actions/setup-python@v7
-        with:
-          # リポジトリの変数 PYTHON_VERSION（なければ 3.13）
-          python-version: ${{ vars.PYTHON_VERSION || '3.13' }}
-
-      - name: 早見表のページを組み立てる
-        id: site
-        run: |
-          python scripts/build_site.py
-          echo "size=$(wc -c < site/index.html)" >> "$GITHUB_OUTPUT"
-
-      - name: 組み立てたページを残す
-        uses: actions/upload-artifact@v7
-        with:
-          name: site
-          path: site/
-          retention-days: 7
-          if-no-files-found: error
-
-  check-site:
-    needs: build
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
-    steps:
-      - name: 組み立てたページを受け取る
-        uses: actions/download-artifact@v8
-        with:
-          name: site
-          path: site
-
-      - name: 受け取ったページと出力を確かめる
-        env:
-          SIZE: ${{ needs.build.outputs.size }}
-        run: |
-          ls -l site/
-          echo "build ジョブの出力: index.html は ${SIZE} バイト"
-          test -s site/index.html
+    uses: $/.github/workflows/test.yml
 
   comment:
     # 同じリポジトリのプルリクエストのときだけ（フォークからの PR では動かさない）
     if: >-
       github.event_name == 'pull_request' &&
       github.event.pull_request.head.repo.full_name == github.repository
-    needs: [lint, test]
+    needs: test
     runs-on: ubuntu-latest
     timeout-minutes: 5
     # このジョブにだけ、プルリクエストに書き込む権限を足す
