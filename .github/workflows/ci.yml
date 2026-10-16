@@ -132,8 +132,8 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     # このジョブにだけ、プルリクエストに書き込む権限を足す
-    # permissions:
-    #   pull-requests: write
+    permissions:
+      pull-requests: write
     steps:
       - name: テストの結果をプルリクエストにコメントする
         env:
