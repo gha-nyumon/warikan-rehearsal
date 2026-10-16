@@ -16,7 +16,7 @@ concurrency:
 
 jobs:
   lint:
-      runs-on: ubuntu-latest
+    runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
       - name: リポジトリを取り出す
