@@ -1,0 +1,59 @@
+name: Pages
+
+# 公開は main に入ったときと、手動のときだけ（プルリクエストでは動かさない）
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# 公開は同時に動かさない。途中の公開は取り消さずに、前の公開が終わるのを待つ
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  test:
+    uses: $/.github/workflows/test.yml
+
+  build:
+    needs: test
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: リポジトリを取り出す
+        uses: actions/checkout@v7
+
+      - name: Python と道具を用意する
+        uses: $/.github/actions/setup
+        with:
+          python-version: ${{ vars.PYTHON_VERSION || '3.13' }}
+
+      - name: 早見表のページを組み立てる
+        run: python scripts/build_site.py
+
+      - name: Pages の設定を読み込む
+        uses: actions/configure-pages@v6
+
+      - name: ページ用のアーティファクトとしてアップロードする
+        uses: actions/upload-pages-artifact@v5
+        with:
+          path: site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    # 公開のジョブにだけ、ページの書き込みと身分証明の権限を足す
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: GitHub Pages に公開する
+        id: deployment
+        uses: actions/deploy-pages@v5

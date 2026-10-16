@@ -1,0 +1,22 @@
+name: Python と道具を用意する
+description: Python を用意し（pip のキャッシュつき）、requirements-dev.txt の道具をインストールする
+
+inputs:
+  python-version:
+    description: 使う Python のバージョン
+    required: false
+    default: "3.13"
+
+runs:
+  using: composite
+  steps:
+    - name: Python を用意する（pip のキャッシュつき）
+      uses: actions/setup-python@v7
+      with:
+        python-version: ${{ inputs.python-version }}
+        cache: pip
+        cache-dependency-path: requirements-dev.txt
+
+    - name: 道具をインストールする
+      shell: bash
+      run: pip install -r requirements-dev.txt
