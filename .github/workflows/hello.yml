@@ -15,7 +15,7 @@ jobs:
         run: echo "こんにちは、GitHub Actions！"
 
       - name: ファイルの一覧
-        run: cat READ.md
+        run: ls -la
 
       - name: ランナーの情報
         run: |
