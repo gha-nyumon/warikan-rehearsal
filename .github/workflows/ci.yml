@@ -22,10 +22,12 @@ jobs:
       - name: リポジトリを取り出す
         uses: actions/checkout@v7
 
-      - name: Python を用意する
+      - name: Python を用意する（pip のキャッシュつき）
         uses: actions/setup-python@v7
         with:
           python-version: "3.13"
+          cache: pip
+          cache-dependency-path: requirements-dev.txt
 
       - name: 道具をインストールする
         run: pip install -r requirements-dev.txt
@@ -44,17 +46,81 @@ jobs:
       - name: リポジトリを取り出す
         uses: actions/checkout@v7
 
-      - name: Python を用意する
+      - name: Python を用意する（pip のキャッシュつき）
         uses: actions/setup-python@v7
         with:
           python-version: ${{ matrix.python }}
+          cache: pip
+          cache-dependency-path: requirements-dev.txt
 
       - name: 道具をインストールする
         run: pip install -r requirements-dev.txt
 
       - name: テストを実行する（pytest）
-        run: pytest --junitxml=report/junit.xml
+        run: >-
+          pytest
+          --junitxml=report/junit.xml
+          --cov=warikan
+          --cov-report=term
+          --cov-report=html:report/htmlcov
 
       - name: 実行のまとめを書く
         if: always()
         run: python scripts/summary.py report/junit.xml "テストの結果（Python ${{ matrix.python }}）" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: テストのレポートを残す
+        if: always() && matrix.python == '3.13'
+        uses: actions/upload-artifact@v7
+        with:
+          name: test-report
+          path: report/
+          retention-days: 7
+          if-no-files-found: error
+
+  build:
+    needs: [lint, test]
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      size: ${{ steps.site.outputs.size }}
+    steps:
+      - name: リポジトリを取り出す
+        uses: actions/checkout@v7
+
+      - name: Python を用意する
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.13"
+
+      - name: 早見表のページを組み立てる
+        id: site
+        run: |
+          python scripts/build_site.py
+          echo "size=$(wc -c < site/index.html)" >> "$GITHUB_OUTPUT"
+
+      - name: 組み立てたページを残す
+        uses: actions/upload-artifact@v7
+        with:
+          name: site
+          path: site/
+          retention-days: 7
+          if-no-files-found: error
+
+  check-site:
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: 組み立てたページを受け取る
+        uses: actions/download-artifact@v8
+        with:
+          name: site
+          path: site
+
+      - name: 受け取ったページと出力を確かめる
+        env:
+          SIZE: ${{ needs.build.outputs.size }}
+        run: |
+          ls -l site/
+          echo "build ジョブの出力: index.html は ${SIZE} バイト"
+          test -s site/index.html
